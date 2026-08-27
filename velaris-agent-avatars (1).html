@@ -1,0 +1,1541 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Velaris comms avatar — states</title>
+<style>
+  :root {
+    --bg: #0b0c10;
+    --panel: #14161c;
+    --line: #23262f;
+    --ink: #e7e9ee;
+    --muted: #8b90a0;
+    --accent: #5358F8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 32px;
+    line-height: 1.5;
+  }
+  .stage {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 40px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+  .renders {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+  }
+  .render {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .render canvas { display: block; }
+  .render .cap {
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .meta {
+    flex: 1;
+    min-width: 220px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tabs button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 16px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-pressed="true"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .grouplabel {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 4px 0 8px;
+  }
+  .density {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .density input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 240px;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--line);
+    outline: none;
+  }
+  .density input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid #0b0c10;
+  }
+  .density input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid #0b0c10;
+  }
+  .densityval {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 70px;
+  }
+  button.shape {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #10121a;
+    color: var(--muted);
+    padding: 9px 14px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  button.shape:hover { color: var(--ink); border-color: #333846; }
+  button.shape[aria-pressed="true"] {
+    color: #fff;
+    border-color: #6b7280;
+    background: #1b1e26;
+  }
+  button.state {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #10121a;
+    color: var(--muted);
+    padding: 9px 14px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  button.state:hover { color: var(--ink); border-color: #333846; }
+  button.state[aria-pressed="true"] {
+    color: #fff;
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, #10121a);
+  }
+  .cardtoggle { display: flex; gap: 8px; margin-left: auto; }
+  .cardtoggle button {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .cardtoggle button[aria-pressed="true"] { color: var(--ink); border-color:#333846; }
+  .desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 700px;
+  }
+  .desc code {
+    background: #1b1e26;
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: #cfd3dd;
+    font-size: 11.5px;
+  }
+</style>
+
+<div class="wrap">
+  <h1>Velaris agent avatars</h1>
+  <p class="sub">Two renderers for the same six shapes and six states: a masked particle surface, and an iridescent gradient orb clipped to each shape.</p>
+
+  <div class="tabs" id="tabs">
+    <button data-tab="dots" aria-pressed="true">Dot pattern</button>
+    <button data-tab="orb" aria-pressed="false">Gradient orb</button>
+    <button data-tab="scan" aria-pressed="false">Scanline</button>
+    <button data-tab="wave" aria-pressed="false">Waveform</button>
+    <button data-tab="blob" aria-pressed="false">Liquid blob</button>
+  </div>
+
+  <div class="grouplabel">Shape</div>
+  <div class="controls" id="shapeControls"></div>
+
+  <div class="grouplabel">State</div>
+  <div class="controls" id="controls"></div>
+
+  <div class="grouplabel" id="densityLabel">Density</div>
+  <div class="density" id="densityRow">
+    <input type="range" id="densitySlider" min="8" max="12" step="1" value="12" />
+    <span class="densityval" id="densityVal">— dots</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="renders" id="renders"></div>
+    <div class="renders" id="orbRenders" style="display:none"></div>
+    <div class="renders" id="blobRenders" style="display:none"></div>
+    <div class="renders" id="scanRenders" style="display:none"></div>
+    <div class="renders" id="waveRenders" style="display:none"></div>
+    <div class="meta">
+      state <b id="mState">idle</b> since <b id="mSince">0.0s</b><br />
+      fps <b id="mFps">—</b><br />
+      renderer <b id="mRenderer">canvas 2d, masked wave-field grid</b>
+    </div>
+    <div class="cardtoggle">
+      <button id="btnDark" aria-pressed="true">Dark card</button>
+      <button id="btnLight" aria-pressed="false">Light card</button>
+    </div>
+  </div>
+
+  <p class="desc">
+    Each dot lives on a fixed slot in the 12×12 lattice. A separate <b>brightness field</b> — one or two Gaussian hotspots travelling a closed path — drives each dot's glow independently of its position.
+    <b>Working</b> lets the lattice flex vertically through a wave-height field (smooth, slow).
+    <b>Idle</b> and <b>Completed</b> freeze the geometry and move only the glow gradient (purple <code>#5358F8</code> / teal <code>#0ABBB6</code>).
+    <b>Needs attention</b> pulses a ring outward from centre once per second in orange.
+    <b>Paused</b> is still and desaturated. <b>Failed</b> scatters the dots off-slot with a subtle drift and faint red glow — the broken lattice.
+  </p>
+</div>
+
+<script>
+const SHAPES = {
+  comms: [
+    "001111111100",
+    "011111111110",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "011111111110",
+    "001111111100",
+    "000111000000",
+    "000110000000",
+  ],
+  account_planning: [
+    "000111111000",
+    "011111111110",
+    "111111111111",
+    "111100001111",
+    "111100001111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "111111111111",
+    "011111111110",
+    "001111111100",
+  ],
+  onboarding: [
+    "000000000110",
+    "000000001111",
+    "000000001111",
+    "000000001111",
+    "000001111111",
+    "000011111111",
+    "000011111111",
+    "000011111111",
+    "011111111111",
+    "111111111111",
+    "111111111111",
+    "011111111110",
+  ],
+  expansion: [
+    "011111111110",
+    "111111111111",
+    "011111111111",
+    "000000111111",
+    "000001111111",
+    "000011111111",
+    "000111110111",
+    "001111100111",
+    "011111000111",
+    "111110000111",
+    "111100000111",
+    "111000000010",
+  ],
+  renewal: [
+    "000011110100",
+    "000111111100",
+    "011110011100",
+    "011000111100",
+    "111000000000",
+    "110000000011",
+    "110000000011",
+    "111000000111",
+    "011000000110",
+    "011110011110",
+    "000111111000",
+    "000011110000",
+  ],
+  risk: [
+    "000011110000",
+    "000111111000",
+    "001110011100",
+    "011110011110",
+    "111110011111",
+    "111110011111",
+    "111111111111",
+    "111111111111",
+    "011110011110",
+    "001110011100",
+    "000111111000",
+    "000011110000",
+  ],
+};
+const SHAPE_LABELS = {
+  comms: "Comms", account_planning: "Account planning", onboarding: "Onboarding",
+  expansion: "Expansion", renewal: "Renewal", risk: "Risk",
+};
+
+// Vector silhouettes (viewBox 0 0 196 196) used to clip the gradient orb.
+// Fill shapes use evenodd; renewal is stroke-based so we stroke it into the clip.
+const SHAPE_SVG = {
+  account_planning: { vb:196, fill:["M128 14C134.627 14 140 19.3726 140 26C140 27.1046 140.895 28 142 28H150C167.673 28 182 42.3269 182 60V136C182 161.405 161.405 182 136 182H60C34.5949 182 14 161.405 14 136V60C14 42.3269 28.3269 28 46 28H54C55.1046 28 56 27.1046 56 26C56 19.3726 61.3726 14 68 14H128ZM70 56C62.268 56 56 62.268 56 70C56 77.732 62.268 84 70 84H126C133.732 84 140 77.732 140 70C140 62.268 133.732 56 126 56H70Z"] },
+  comms: { vb:196, fill:["M88.8643 172.949C86.1962 178.483 80.5952 182 74.4521 182H72C63.1634 182 56 174.837 56 166V161C56 157.134 52.866 154 49 154H28C20.268 154 14 147.732 14 140V28C14 20.268 20.268 14 28 14H168C175.732 14 182 20.268 182 28V140C182 147.732 175.732 154 168 154H102.396C99.7085 154 97.258 155.539 96.0908 157.96L88.8643 172.949Z"] },
+  expansion: { vb:196, fill:["M161.542 14.0068C172.889 14.2943 182 23.5832 182 35V161C182 172.598 172.598 182 161 182C149.402 182 140 172.598 140 161V99.0903C140 96.4176 136.769 95.0791 134.879 96.969L53.376 178.472C43.6129 188.235 27.7836 188.235 18.0205 178.472C8.25745 168.709 8.25754 152.879 18.0205 143.116L100.015 61.1213C101.905 59.2314 100.567 56 97.8941 56H35C23.402 56 14 46.598 14 35C14 23.402 23.402 14 35 14H161C161.181 14 161.362 14.0023 161.542 14.0068Z"] },
+  onboarding: { vb:196, fill:["M182 170C182 176.627 176.627 182 170 182H26C19.3726 182 14 176.627 14 170V138C14 131.373 19.3726 126 26 126H58C64.6274 126 70 120.627 70 114V82C70 75.3726 75.3726 70 82 70H114C120.627 70 126 64.6274 126 58V26C126 19.3726 131.373 14 138 14H170C176.627 14 182 19.3726 182 26V170Z"] },
+  renewal: { vb:196, stroke:["M154 52.7453C143.325 39.5352 128.323 30.5243 111.646 27.3052C94.9698 24.0861 77.6921 26.8661 62.8669 35.1538C48.0418 43.4415 36.6238 56.7033 30.6309 72.5953C24.6381 88.4873 24.4563 105.986 30.1176 121.999C35.779 138.012 46.919 151.509 61.5687 160.103C76.2185 168.697 93.4347 171.835 110.175 168.963C126.914 166.091 142.1 157.394 153.048 144.409C160.947 135.039 166.272 123.873 168.626 112","M161 26L161 67L121 67"], strokeWidth:24 },
+  risk: { vb:196, fill:["M73.5 15.1447C88.6606 6.39186 107.339 6.39186 122.5 15.1447L157.505 35.3547C172.665 44.1077 182.005 60.2843 182.005 77.7902V118.21C182.005 135.716 172.665 151.892 157.505 160.645L122.5 180.855C107.339 189.608 88.6607 189.608 73.5 180.855L38.4951 160.645C23.3348 151.892 13.9952 135.716 13.9951 118.21V77.7902C13.9951 60.2843 23.3346 44.1077 38.4951 35.3547L73.5 15.1447ZM98 126C90.268 126 84 132.268 84 140C84.0001 147.732 90.2681 154 98 154C105.732 154 112 147.732 112 140C112 132.268 105.732 126 98 126ZM98 42.0002C90.268 42.0002 84 48.2682 84 56.0002V98.0002C84.0001 105.732 90.2681 112 98 112C105.732 112 112 105.732 112 98.0002V56.0002C112 48.2682 105.732 42.0002 98 42.0002Z"] },
+};
+// Pre-parse Path2D objects, keyed by shape.
+const SHAPE_PATH2D = {};
+for (const [k,v] of Object.entries(SHAPE_SVG)){
+  SHAPE_PATH2D[k] = {
+    vb: v.vb,
+    fill: (v.fill||[]).map(d=>new Path2D(d)),
+    stroke: (v.stroke||[]).map(d=>new Path2D(d)),
+    strokeWidth: v.strokeWidth||0,
+  };
+}
+const BASE_N = 12;
+let SHAPE = SHAPES.comms;
+let RES = BASE_N;            // current lattice resolution (dots per side)
+let curN = BASE_N;          // effective N used by the current slot set
+
+// Bilinear downsample of a 12x12 "0/1" string mask to an NxN 0/1 grid.
+function resampleMask(rows, N){
+  if (N >= BASE_N){
+    return rows.map(r => r.split("").map(ch => ch === "1" ? 1 : 0));
+  }
+  const src = rows.map(r => r.split("").map(ch => ch === "1" ? 1 : 0));
+  const out = [];
+  for (let i = 0; i < N; i++){
+    const row = [];
+    // map dst pixel center to src space
+    const fy = (i + 0.5) * BASE_N / N - 0.5;
+    for (let j = 0; j < N; j++){
+      const fx = (j + 0.5) * BASE_N / N - 0.5;
+      const x0 = Math.floor(fx), y0 = Math.floor(fy);
+      const x1 = Math.min(x0 + 1, BASE_N - 1), y1 = Math.min(y0 + 1, BASE_N - 1);
+      const cx0 = Math.max(0, Math.min(BASE_N - 1, x0));
+      const cy0 = Math.max(0, Math.min(BASE_N - 1, y0));
+      const tx = fx - x0, ty = fy - y0;
+      const v00 = src[cy0][cx0], v10 = src[cy0][x1], v01 = src[y1][cx0], v11 = src[y1][x1];
+      const v = v00*(1-tx)*(1-ty) + v10*tx*(1-ty) + v01*(1-tx)*ty + v11*tx*ty;
+      row.push(v > 0.45 ? 1 : 0);
+    }
+    out.push(row);
+  }
+  return out;
+}
+
+// Count how many dots a shape has at a given resolution.
+function dotCount(rows, N){
+  const m = resampleMask(rows, N);
+  let n = 0; for (const r of m) for (const v of r) n += v; return n;
+}
+
+// Build particle slots from the current mask at the current resolution.
+let slots = [];
+function buildSlots(){
+  const N = RES;
+  curN = N;
+  const mask = resampleMask(SHAPE, N);
+  slots = [];
+  const denom = (N - 1) / 2 || 1;
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      if (mask[r][c]) {
+        slots.push({
+          gx: (c - (N - 1) / 2) / denom, // -1..1
+          gy: (r - (N - 1) / 2) / denom,
+          col: c, row: r,
+        });
+      }
+    }
+  }
+}
+buildSlots();
+
+// Colour ramps -------------------------------------------------------------
+function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+function rgb(c,alpha){ return `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${alpha})`; }
+
+// Multi-stop ramp: brightness 0..1 -> colour. Base is the mid tone.
+function makeRamp(baseHex){
+  const base = hexToRgb(baseHex);
+  const dark = mix(base, [0,0,0], 0.62);
+  const light = mix(base, [255,255,255], 0.55);
+  const white = mix(base, [255,255,255], 0.9);
+  return function(b){
+    b = Math.max(0, Math.min(1, b));
+    if (b < 0.33) return mix(dark, base, b/0.33);
+    if (b < 0.7)  return mix(base, light, (b-0.33)/0.37);
+    return mix(light, white, (b-0.7)/0.3);
+  };
+}
+// original fire ramp: dark-red -> red -> orange -> cream -> white-hot
+function fireRamp(b){
+  b = Math.max(0, Math.min(1, b));
+  const stops = [
+    [0.00, [40,6,4]],
+    [0.25, [150,22,14]],
+    [0.5,  [232,86,20]],
+    [0.78, [245,214,150]],
+    [1.0,  [255,255,255]],
+  ];
+  for (let i=0;i<stops.length-1;i++){
+    if (b<=stops[i+1][0]){
+      const t=(b-stops[i][0])/(stops[i+1][0]-stops[i][0]);
+      return mix(stops[i][1], stops[i+1][1], t);
+    }
+  }
+  return stops[stops.length-1][1];
+}
+
+const RAMPS = {
+  idle: makeRamp("#5358F8"),
+  working: makeRamp("#5358F8"),
+  completed: makeRamp("#0ABBB6"),
+  attention: makeRamp("#F5911E"),
+  paused: (b)=>{ const g=70+b*90; return [g,g*1.02,g*1.08]; }, // cool grey
+  failed: (b)=>{ // clean red, no orb: dark-red -> red
+    b = Math.max(0,Math.min(1,b));
+    return mix([120,18,18],[236,54,48], b);
+  },
+};
+
+// State timing
+const STATES = ["paused","idle","working","attention","completed","failed"];
+
+// Hotspot path (closed loop) — drives brightness field
+function hotspots(t){
+  // one or two gaussian centers travelling closed paths
+  const a = { x: 0.7*Math.cos(t*1.1), y: 0.7*Math.sin(t*1.1*0.8) };
+  const b = { x: 0.6*Math.cos(t*0.7+2.1), y: 0.6*Math.sin(t*0.7+0.4) };
+  return [a,b];
+}
+
+// Wave height field (working state) — periodic sum, 3s loop feel
+function waveHeight(gx, gy, t){
+  return (
+    Math.sin(gx*2.4 + t*1.2) * Math.cos(gy*2.1 - t*0.9) * 0.5 +
+    Math.sin((gx+gy)*1.8 + t*0.7) * 0.3
+  );
+}
+
+class Avatar {
+  constructor(size){
+    this.size = size;
+    this.dpr = Math.min(window.devicePixelRatio||1, 2);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = size*this.dpr;
+    this.canvas.height = size*this.dpr;
+    this.canvas.style.width = size+"px";
+    this.canvas.style.height = size+"px";
+    this.ctx = this.canvas.getContext("2d");
+    this.ctx.scale(this.dpr, this.dpr);
+    this.trails = [];
+  }
+  resetTrails(){ this.trails = []; }
+  draw(state, t, dark){
+    const ctx = this.ctx, S = this.size;
+    ctx.clearRect(0,0,S,S);
+    const cx = S/2, cy = S/2;
+    const pad = S*0.12;
+    const span = (S/2 - pad);
+    const dotR = Math.max(1.1, S*0.028 * (BASE_N/curN));
+    const ramp = RAMPS[state];
+
+    // Working: smooth vertical hover of the whole shape.
+    const hover = (state==="working") ? Math.sin(t*1.6) * span * 0.05 : 0;
+
+    for (let i=0;i<slots.length;i++){
+      const s = slots[i];
+      let px = cx + s.gx*span;
+      let py = cy + s.gy*span + hover;
+
+      // --- geometry per state ---
+      if (state === "failed"){
+        // broken lattice: displaced off slot, with ample wiggle
+        const seed = i*12.9898;
+        px += Math.sin(seed*1.3) * span * 0.17 + Math.sin(t*1.4 + seed) * span * 0.055;
+        py += Math.cos(seed*2.1) * span * 0.17 + Math.cos(t*1.25 + seed*1.7) * span * 0.055;
+      }
+      // idle / working / completed / paused / attention: no positional movement
+
+      // --- brightness field ---
+      let bright;
+      if (state === "paused"){
+        bright = 0.32; // flat, faded, no movement
+      } else if (state === "idle"){
+        // no travelling orb — flat, slightly faded colour
+        bright = 0.42;
+      } else if (state === "working"){
+        // travelling glow (as idle used to have) + the per-dot movement above
+        const hs = hotspots(t);
+        const d2 = (a)=>{ const dx=s.gx-a.x, dy=s.gy-a.y; return dx*dx+dy*dy; };
+        const g1 = Math.exp(-d2(hs[0])*3.2);
+        const g2 = Math.exp(-d2(hs[1])*3.6)*0.8;
+        bright = Math.min(0.64, 0.22 + Math.min(1, g1+g2)*0.95);
+      } else if (state === "attention"){
+        // pulse ring expands from centre, then rests ~1s before repeating
+        const PERIOD = 2.0;          // full cycle length (s)
+        const SWEEP = 1.0;           // active expansion portion (s)
+        const lp = t % PERIOD;
+        if (lp < SWEEP){
+          const pr = (lp / SWEEP) * 1.65;  // 0..1.65 — ring fully exits before rest
+          const rad = Math.hypot(s.gx, s.gy) / 1.42;
+          const ring = Math.exp(-Math.pow((rad - pr)*4.5, 2));
+          bright = 0.28 + ring*0.9;
+        } else {
+          bright = 0.28;             // rest between pulses
+        }
+      } else if (state === "completed"){
+        // diagonal light sweep across the shape, 2.5s cadence
+        const PERIOD = 2.5;
+        const lp = (t % PERIOD) / PERIOD;      // 0..1
+        // projection of the dot along the sweep axis (top-left -> bottom-right)
+        const proj = ((s.gx + s.gy) / 2 + 1) / 2; // 0..1
+        const head = lp * 1.5 - 0.25;          // sweep line position, over-travels edges
+        const d = proj - head;
+        const band = Math.exp(-Math.pow(d*6.0, 2));
+        bright = 0.30 + band*0.55;
+      } else if (state === "failed"){
+        // mostly flat red — with a faint slow shimmer
+        bright = 0.34 + (Math.sin(i*7.13)*0.5+0.5)*0.14 + Math.sin(t*1.1 + i*0.7)*0.05;
+      }
+      bright = Math.max(0, Math.min(1, bright));
+
+      const c = ramp(bright);
+
+      // trails: no longer used (no state has smooth per-dot motion)
+      if (this.trails[i]) this.trails[i].length = 0;
+
+      // glow halo — none/minimal for flat states, orb only where it helps
+      let glowA, glowR = dotR*3.4;
+      if (state==="paused"){ glowA = 0.08; }
+      else if (state==="idle"){ glowA = 0.10; glowR = dotR*2.2; }
+      else if (state==="working"){ glowA = 0.16 + bright*0.5; } // travelling orb glow
+      else if (state==="failed"){ glowA = 0.16 + bright*0.24; glowR = dotR*3.0; }
+      else { glowA = 0.16 + bright*0.5; } // attention, completed
+      {
+        const g = ctx.createRadialGradient(px,py,0,px,py,glowR);
+        g.addColorStop(0, rgb(c, glowA));
+        g.addColorStop(1, rgb(c, 0));
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(px,py,glowR,0,Math.PI*2);
+        ctx.fill();
+      }
+
+      // core dot
+      const coreA = state==="paused" ? 0.55 : (0.65 + bright*0.35);
+      ctx.beginPath();
+      ctx.fillStyle = rgb(c, coreA);
+      ctx.arc(px, py, dotR*(state==="paused"?0.9:1), 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+}
+
+// --- Orb renderer ---------------------------------------------------------
+// Iridescent gradient (sampled from the reference orb) clipped to the shape mask.
+const ORB_PALETTE = {
+  cream:  hexToRgb("#f2e8e5"),
+  rose:   hexToRgb("#cf8095"),
+  pink:   hexToRgb("#e9cfd0"),
+  teal:   hexToRgb("#2686a4"),
+  cyan:   hexToRgb("#89b8c4"),
+  blue:   hexToRgb("#2a516e"),
+  rust:   hexToRgb("#a04e3d"),
+};
+// Higher-saturation palette (sampled from the vivid soap-bubble reference),
+// used for the Working state so it reads as more electric and alive.
+const ORB_PALETTE_VIVID = {
+  cream:  hexToRgb("#f6eef0"),
+  rose:   hexToRgb("#d88eaf"),
+  pink:   hexToRgb("#c449a2"),   // electric magenta
+  teal:   hexToRgb("#508aa0"),
+  cyan:   hexToRgb("#7cddd8"),   // bright cyan
+  blue:   hexToRgb("#484b89"),   // indigo
+  rust:   hexToRgb("#b96b51"),
+};
+
+// State -> palette recolouring. Idle/Working keep the full iridescence;
+// the others tint toward their signature colour while keeping the glassy feel.
+function orbTint(state){
+  switch(state){
+    case "completed": return hexToRgb("#0ABBB6");
+    case "attention": return hexToRgb("#F5911E");
+    case "failed":    return hexToRgb("#e0231c");
+    case "paused":    return hexToRgb("#8b90a0");
+    default:          return null; // idle/working: no tint
+  }
+}
+
+// Solid per-state colour used by the line-based tabs (idle/working = brand purple).
+function stateColor(state){
+  switch(state){
+    case "completed": return hexToRgb("#0ABBB6");
+    case "attention": return hexToRgb("#F5911E");
+    case "failed":    return hexToRgb("#e0231c");
+    case "paused":    return hexToRgb("#8b90a0");
+    default:          return hexToRgb("#5358F8"); // idle/working
+  }
+}
+
+class OrbAvatar {
+  constructor(size){
+    this.size = size;
+    this.dpr = Math.min(window.devicePixelRatio||1, 2);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = size*this.dpr;
+    this.canvas.height = size*this.dpr;
+    this.canvas.style.width = size+"px";
+    this.canvas.style.height = size+"px";
+    this.ctx = this.canvas.getContext("2d");
+    this.ctx.scale(this.dpr, this.dpr);
+    // offscreen buffer for the gradient field
+    this.buf = document.createElement("canvas");
+    this.bctx = this.buf.getContext("2d");
+    // offscreen buffer for the shape mask (silhouette union)
+    this.mbuf = document.createElement("canvas");
+    this.mctx = this.mbuf.getContext("2d");
+  }
+  resetTrails(){}
+
+  // Render the current vector silhouette (white on transparent) into ctx.
+  // Uses fill (evenodd) for fill shapes, stroke for the renewal shape.
+  drawSilhouette(ctx, S){
+    const p = SHAPE_PATH2D[currentShape];
+    if (!p){ ctx.beginPath(); ctx.arc(S/2,S/2,S*0.42,0,Math.PI*2); ctx.fill(); return; }
+    const pad = S*0.02;
+    const scale = (S - pad*2) / p.vb;
+    ctx.save();
+    ctx.translate(pad, pad);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#fff";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    for (const path of p.fill) ctx.fill(path, "evenodd");
+    if (p.stroke.length){
+      ctx.lineWidth = p.strokeWidth;
+      for (const path of p.stroke) ctx.stroke(path);
+    }
+    ctx.restore();
+  }
+
+  blob(ctx, x, y, rad, col, alpha, pointy){
+    const g = ctx.createRadialGradient(x,y,0,x,y,rad);
+    g.addColorStop(0, rgb(col, alpha));
+    g.addColorStop(1, rgb(col, 0));
+    ctx.fillStyle = g;
+    if (pointy !== true){
+      // default: round bubbly glow
+      ctx.beginPath();
+      ctx.arc(x,y,rad,0,Math.PI*2);
+      ctx.fill();
+      return;
+    }
+    // Pointy lobe (Failed only): a soft multi-point star.
+    const spikes = 5;
+    const inner = rad*0.42;
+    const rot0 = (x*0.013 + y*0.017);
+    ctx.beginPath();
+    for (let i=0;i<spikes*2;i++){
+      const r = (i%2===0) ? rad : inner;
+      const a = rot0 + (i/(spikes*2))*Math.PI*2;
+      const px = x + Math.cos(a)*r;
+      const py = y + Math.sin(a)*r;
+      if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Thin prismatic streaks hugging the rim — hinted light refraction.
+  refractions(ctx, cx, cy, R, t, rot){
+    const cols = [
+      hexToRgb("#ff3ea5"), // magenta
+      hexToRgb("#3ec8ff"), // cyan
+      hexToRgb("#7c5cff"), // violet
+      hexToRgb("#ffd24a"), // gold
+    ];
+    ctx.save();
+    ctx.globalCompositeOperation = "screen"; // additive-ish, keeps them bright
+    for (let k=0;k<cols.length;k++){
+      const base = rot*0.5 + k*(Math.PI*2/cols.length) + Math.sin(t*0.3+k)*0.15;
+      const rr = R*(0.92 - k*0.015);            // near the rim, slightly staggered
+      const span = 0.5 + 0.15*Math.sin(t*0.4+k); // arc length
+      const steps = 22;
+      ctx.lineCap = "round";
+      for (let s=0;s<steps;s++){
+        const a0 = base + (s/steps)*span;
+        const x = cx + Math.cos(a0)*rr;
+        const y = cy + Math.sin(a0)*rr;
+        // fade in/out along the arc so streaks have soft ends
+        const env = Math.sin((s/steps)*Math.PI);
+        const rad = R*0.055*env + R*0.012;
+        this.blob(ctx, x, y, rad, cols[k], 0.22*env, false);
+      }
+    }
+    ctx.restore();
+  }
+
+  draw(state, t, dark){
+    const S = this.size, ctx = this.ctx;
+    ctx.clearRect(0,0,S,S);
+
+    // motion params per state
+    let speed = 0.35, swirl = 0.0, breathe = 0.0, chroma = 1.0;
+    if (state==="idle"){ speed = 0.22; breathe = 1.0; swirl = 0.15; }
+    else if (state==="working"){ speed = 0.7; swirl = 1.0; breathe = 0.3; }
+    else if (state==="completed"){ speed = 0.18; swirl = 0.15; chroma = 0.55; }
+    else if (state==="attention"){ speed = 0.18; swirl = 0.12; chroma = 0.5; }
+    else if (state==="failed"){ speed = 0; swirl = 0; chroma = 0.75; }
+    else if (state==="paused"){ speed = 0.05; swirl = 0.02; chroma = 0.15; }
+
+    const cx = S/2, cy = S/2;
+    const R = S*0.60;   // field radius — large enough to cover corner-filling shapes
+    const tint = orbTint(state);
+
+    // breathing scale (idle) — gentle in/out
+    const br = 1 + Math.sin(t*0.8)*0.02*breathe;
+    // global rotation (idle rotation / working swirl base)
+    const rot = t*speed*(0.25 + swirl*0.5);
+
+    // Paint the iridescent field into the buffer.
+    const buf = this.buf, bctx = this.bctx;
+    if (buf.width !== Math.ceil(S*this.dpr)){ buf.width = Math.ceil(S*this.dpr); buf.height = Math.ceil(S*this.dpr); }
+    bctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    bctx.clearRect(0,0,S,S);
+
+    // Working uses the vivid palette + edge-concentrated colour + refractions.
+    const vivid = (state==="working");
+    const P = vivid ? ORB_PALETTE_VIVID : ORB_PALETTE;
+    const edge = vivid ? 1.18 : 1.0;   // push colour lobes outward toward the rim
+    const amp  = vivid ? 1.12 : 1.0;   // stronger colour
+
+    // base wash — full bleed so shapes that reach the corners are covered
+    bctx.fillStyle = rgb(P.pink, 0.55);
+    bctx.fillRect(0,0,S,S);
+
+    // helper to place a colour blob on an orbiting path
+    const put = (col, ang, dist, radScale, a)=>{
+      const x = cx + Math.cos(ang)*R*dist*edge;
+      const y = cy + Math.sin(ang)*R*dist*edge;
+      this.blob(bctx, x, y, R*radScale, col, Math.min(1, a*chroma*amp));
+    };
+
+    // Failed: freeze all motion so the (faded, curvy) orbs are static.
+    const frozen = (state==="failed");
+    const rotM = frozen ? 1.7 : rot;   // fixed phase for a pleasant static arrangement
+    const sw = frozen ? 0 : swirl * Math.sin(t*0.6)*0.6;
+
+    // Layered iridescent lobes. Angles advance with rot; working adds a second
+    // faster swirl term so the colours churn.
+    put(P.teal, rotM*1.0 + 0.0 + sw,      0.42, 0.78, 0.95);
+    put(P.cyan, rotM*1.0 + 0.9 + sw,      0.34, 0.68, vivid?0.95:0.75);
+    put(P.pink, rotM*0.8 + 2.1 - sw*1.3,  0.44, 0.72, 0.90);
+    put(P.rose, rotM*0.8 + 2.6 - sw*1.3,  0.30, 0.55, 0.80);
+    put(P.blue, rotM*1.2 + 4.0 + sw*0.7,  0.48, 0.62, 0.80);
+    // extra cyan sweep opposite the magenta for the reference's blue/pink split
+    if (vivid) put(P.cyan, rotM*1.1 + 3.7 + sw, 0.46, 0.60, 0.7);
+    // warm refraction near one edge
+    put(P.rust, rotM*1.4 + 3.2 - sw,      0.60, 0.42, 0.85);
+    // creamy soft light band through the middle
+    put(P.cream, rotM*0.6 + 1.4 + sw*0.4, 0.10, 0.70, 0.55);
+    // bright specular highlight drifts (frozen when failed)
+    const ht = frozen ? 0 : t*speed*0.8;
+    const hx = cx + Math.cos(-0.7 + ht)*R*0.32;
+    const hy = cy + Math.sin(-0.7 + ht)*R*0.32;
+    this.blob(bctx, hx, hy, R*0.45, P.cream, 0.6, false);
+    // working: a brighter luminous core like the reference bubble
+    if (vivid){
+      this.blob(bctx, cx + Math.cos(t*0.5)*R*0.12, cy + Math.sin(t*0.5)*R*0.12,
+                R*0.55, ORB_PALETTE_VIVID.cream, 0.5, false);
+    }
+
+    // Refraction streaks (working only): thin bright rainbow arcs near the rim,
+    // hinting at the light-splitting in the reference bubble.
+    if (vivid){
+      this.refractions(bctx, cx, cy, R, t, rot);
+    }
+
+    // Boost saturation for the vivid (working) look — partial so hues stay balanced.
+    if (vivid){
+      bctx.globalAlpha = 0.6;
+      bctx.globalCompositeOperation = "saturation";
+      bctx.fillStyle = "hsl(0,100%,50%)";
+      bctx.fillRect(0,0,S,S);
+      bctx.globalCompositeOperation = "source-over";
+      bctx.globalAlpha = 1;
+    }
+
+    // optional state tint wash
+    if (tint){
+      bctx.globalCompositeOperation = "color";
+      const tintA = state==="paused" ? 0.85 : (state==="failed" ? 0.8 : 0.6);
+      bctx.fillStyle = rgb(tint, tintA);
+      bctx.fillRect(0,0,S,S);
+      bctx.globalCompositeOperation = "source-over";
+    }
+    // Failed: push saturation so the red reads vivid rather than washed.
+    if (state==="failed"){
+      bctx.globalAlpha = 0.7;
+      bctx.globalCompositeOperation = "saturation";
+      bctx.fillStyle = "hsl(0,100%,50%)";
+      bctx.fillRect(0,0,S,S);
+      bctx.globalCompositeOperation = "source-over";
+      bctx.globalAlpha = 1;
+    }
+
+    // Needs attention: a soft, blurry ring pulsing outward from centre,
+    // resting ~1s before repeating (mirrors the dot-pattern timing).
+    if (state==="attention"){
+      const PERIOD = 2.0, SWEEP = 1.0;
+      const lp = t % PERIOD;
+      if (lp < SWEEP){
+        const pr = (lp / SWEEP) * 1.5;      // over-travels so the ring fully exits
+        const ringR = pr * R * 0.95;
+        const col = orbTint("attention");
+        // bright, blurry ring — whiten the crest so it reads over the tint
+        const crest = mix(col,[255,255,255],0.55);
+        const bandW = R*0.34;               // thickness (still soft/blurry)
+        const inner = Math.max(0, ringR-bandW);
+        const g = bctx.createRadialGradient(cx,cy, inner, cx,cy, ringR+bandW);
+        g.addColorStop(0.0, rgb(crest,0));
+        g.addColorStop(0.5, rgb(crest,0.95));
+        g.addColorStop(1.0, rgb(crest,0));
+        bctx.globalCompositeOperation = "screen";
+        bctx.fillStyle = g;
+        bctx.fillRect(0,0,S,S);
+        bctx.globalCompositeOperation = "source-over";
+      }
+    }
+
+    // Completed: a diagonal light sweep across the shape on a 2.5s cadence.
+    if (state==="completed"){
+      const PERIOD = 2.5;
+      const lp = (t % PERIOD) / PERIOD;     // 0..1
+      const ang = -Math.PI/4;               // top-left -> bottom-right
+      const dx = Math.cos(ang), dy = Math.sin(ang);
+      const reach = R*1.6;
+      const head = (lp*2 - 0.5) * reach;    // sweep-line position, over-travels edges
+      const hx2 = cx + dx*head, hy2 = cy + dy*head;
+      const bandLen = R*0.55;
+      const g = bctx.createLinearGradient(hx2 - dx*bandLen, hy2 - dy*bandLen,
+                                          hx2 + dx*bandLen, hy2 + dy*bandLen);
+      g.addColorStop(0.0, "rgba(255,255,255,0)");
+      g.addColorStop(0.5, "rgba(255,255,255,0.5)");
+      g.addColorStop(1.0, "rgba(255,255,255,0)");
+      bctx.globalCompositeOperation = "screen";
+      bctx.fillStyle = g;
+      bctx.fillRect(0,0,S,S);
+      bctx.globalCompositeOperation = "source-over";
+    }
+
+    // subtle sheen for the glassy look (soft highlight upper-left, gentle darken lower-right)
+    const rim = bctx.createRadialGradient(cx - S*0.18, cy - S*0.2, S*0.05, cx, cy, S*0.7);
+    rim.addColorStop(0, "rgba(255,255,255,0.22)");
+    rim.addColorStop(0.65, "rgba(255,255,255,0)");
+    rim.addColorStop(1, "rgba(20,20,30,0.16)");
+    bctx.fillStyle = rim;
+    bctx.fillRect(0,0,S,S);
+
+    // Build the shape mask in its own buffer (union of all fills/strokes),
+    // then apply it to the field once with destination-in. Doing it in one
+    // step avoids multiple sub-paths intersecting each other.
+    const mbuf = this.mbuf, mctx = this.mctx;
+    if (mbuf.width !== buf.width){ mbuf.width = buf.width; mbuf.height = buf.height; }
+    mctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    mctx.clearRect(0,0,S,S);
+    this.drawSilhouette(mctx, S);
+
+    bctx.save();
+    bctx.globalCompositeOperation = "destination-in";
+    bctx.setTransform(1,0,0,1,0,0);
+    bctx.drawImage(mbuf, 0, 0);
+    bctx.restore();
+
+    ctx.setTransform(1,0,0,1,0,0);
+    // Working: smooth vertical hover of the whole orb.
+    const hoverPx = (state==="working") ? Math.sin(t*1.6) * (S*0.05) * this.dpr : 0;
+    ctx.drawImage(buf, 0, hoverPx);
+    ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+  }
+}
+
+
+// --- Liquid blob renderer -------------------------------------------------
+// An organic metaball-style blob that morphs and wobbles. Not shape-clipped;
+// the selected shape seeds its silhouette character (lobiness / proportions).
+class BlobAvatar {
+  constructor(size){
+    this.size = size;
+    this.dpr = Math.min(window.devicePixelRatio||1, 2);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = size*this.dpr; this.canvas.height = size*this.dpr;
+    this.canvas.style.width = size+"px"; this.canvas.style.height = size+"px";
+    this.ctx = this.canvas.getContext("2d");
+    this.ctx.scale(this.dpr, this.dpr);
+  }
+  resetTrails(){}
+
+  // Build a smooth closed blob path from a radial function r(theta).
+  blobPath(ctx, cx, cy, rfn, steps){
+    const pts = [];
+    for (let i=0;i<steps;i++){
+      const a = (i/steps)*Math.PI*2;
+      const r = rfn(a);
+      pts.push([cx + Math.cos(a)*r, cy + Math.sin(a)*r]);
+    }
+    ctx.beginPath();
+    // Catmull-Rom -> smooth closed curve
+    for (let i=0;i<steps;i++){
+      const p0 = pts[(i-1+steps)%steps];
+      const p1 = pts[i];
+      const p2 = pts[(i+1)%steps];
+      const p3 = pts[(i+2)%steps];
+      if (i===0) ctx.moveTo(p1[0], p1[1]);
+      const c1x = p1[0] + (p2[0]-p0[0])/6;
+      const c1y = p1[1] + (p2[1]-p0[1])/6;
+      const c2x = p2[0] - (p3[0]-p1[0])/6;
+      const c2y = p2[1] - (p3[1]-p1[1])/6;
+      ctx.bezierCurveTo(c1x,c1y,c2x,c2y,p2[0],p2[1]);
+    }
+    ctx.closePath();
+  }
+
+  draw(state, t, dark){
+    const S = this.size, ctx = this.ctx;
+    ctx.clearRect(0,0,S,S);
+    const col = stateColor(state);
+    const cx = S/2, cy = S/2;
+    const base = S*0.30;
+
+    // per-shape character
+    const shapeIdx = Math.max(0, Object.keys(SHAPE_LABELS).indexOf(currentShape));
+    const lobes = 3 + (shapeIdx % 4);          // 3..6 lobes -> different silhouettes
+    const phase = shapeIdx * 1.1;
+
+    // per-state morph parameters
+    let wob = 0.10, speed = 1.0, breathe = 0.0, squash = 0, spike = 0, dim = 1, hover = 0, scatter = 0;
+    if (state==="idle"){ wob = 0.07; speed = 0.6; breathe = 0.04; }
+    else if (state==="working"){ wob = 0.16; speed = 1.9; breathe = 0.03; hover = Math.sin(t*1.6)*S*0.04; }
+    else if (state==="completed"){ wob = 0.03; speed = 0.4; }        // settles calm/round
+    else if (state==="attention"){ wob = 0.09; speed = 1.0; }        // pulse handled below
+    else if (state==="failed"){ wob = 0.22; speed = 2.4; scatter = 1; dim = 0.95; }
+    else if (state==="paused"){ wob = 0.05; speed = 0; dim = 0.6; }
+
+    // attention: sharp outward pulse every 2s, rest ~1s
+    let pulse = 0;
+    if (state==="attention"){
+      const lp = t % 2.0;
+      pulse = lp < 1.0 ? Math.pow(Math.sin(lp*Math.PI), 2) : 0;
+    }
+    // completed: settle to a clean circle over its 2.5s (then hold)
+    let settle = 0;
+    if (state==="completed"){
+      settle = Math.min(1, (t % 2.5)/1.2);
+    }
+
+    const tt = (speed===0) ? phase : (t*speed + phase);
+    const br = 1 + Math.sin(t*0.8)*breathe;
+
+    // radial function describing the blob outline
+    const rfn = (a)=>{
+      let r = base * br;
+      // organic multi-lobe wobble
+      let w = Math.sin(a*lobes + tt) * wob
+            + Math.sin(a*(lobes+2) - tt*0.7) * wob*0.5
+            + Math.sin(a*2 + tt*0.5) * wob*0.4;
+      if (state==="completed") w *= (1 - settle*0.9);   // relax to round
+      if (state==="attention") r += base*0.18*pulse;    // expand on pulse
+      if (state==="failed"){
+        // unstable, jagged
+        w += Math.sin(a*9 + tt*2.3)*0.06 + Math.sin(a*13 - tt*1.7)*0.04;
+      }
+      r *= (1 + w);
+      return r;
+    };
+
+    ctx.save();
+    ctx.translate(0, hover);
+
+    // outer soft glow
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    const glow = ctx.createRadialGradient(cx,cy,base*0.3,cx,cy,base*1.7);
+    glow.addColorStop(0, rgb(col, 0.22*dim));
+    glow.addColorStop(1, rgb(col, 0));
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(cx,cy,base*1.7,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // main blob body with a soft vertical gradient for a liquid-metal sheen
+    this.blobPath(ctx, cx, cy, rfn, 96);
+    const g = ctx.createLinearGradient(cx, cy-base*1.3, cx, cy+base*1.3);
+    const light = mix(col,[255,255,255],0.35);
+    const deep  = mix(col,[0,0,0],0.25);
+    g.addColorStop(0, rgb(light, 0.95*dim));
+    g.addColorStop(0.55, rgb(col, 0.95*dim));
+    g.addColorStop(1, rgb(deep, 0.95*dim));
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    // specular highlight blob (upper-left), drifting
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    const hx = cx - base*0.35 + Math.cos(t*speed*0.6)*base*0.1;
+    const hy = cy - base*0.4 + Math.sin(t*speed*0.6)*base*0.08;
+    const hg = ctx.createRadialGradient(hx,hy,0,hx,hy,base*0.6);
+    hg.addColorStop(0, "rgba(255,255,255,0.5)");
+    hg.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = hg;
+    ctx.beginPath(); ctx.arc(hx,hy,base*0.6,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // failed: a detached droplet flung off, reinforcing "destabilised"
+    if (scatter){
+      const dx = Math.cos(t*2.2)*base*0.9;
+      const dy = Math.sin(t*1.7)*base*0.9;
+      ctx.fillStyle = rgb(col, 0.8*dim);
+      ctx.beginPath(); ctx.arc(cx+dx, cy+dy, base*0.14, 0, Math.PI*2); ctx.fill();
+    }
+
+    ctx.restore();
+  }
+}
+
+
+
+// --- Scanline renderer ----------------------------------------------------
+// HUD / hologram: flat tinted fill, horizontal scanlines, travelling scan bar.
+class ScanlineAvatar {
+  constructor(size){
+    this.size = size;
+    this.dpr = Math.min(window.devicePixelRatio||1, 2);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = size*this.dpr; this.canvas.height = size*this.dpr;
+    this.canvas.style.width = size+"px"; this.canvas.style.height = size+"px";
+    this.ctx = this.canvas.getContext("2d");
+    this.ctx.scale(this.dpr, this.dpr);
+    this.buf = document.createElement("canvas"); this.bctx = this.buf.getContext("2d");
+    this.mbuf = document.createElement("canvas"); this.mctx = this.mbuf.getContext("2d");
+  }
+  resetTrails(){}
+
+  drawSilhouette(ctx, S){
+    const p = SHAPE_PATH2D[currentShape];
+    const pad = S*0.06;
+    const scale = (S - pad*2) / p.vb;
+    ctx.save();
+    ctx.translate(pad, pad); ctx.scale(scale, scale);
+    ctx.fillStyle = "#fff"; ctx.strokeStyle = "#fff";
+    ctx.lineCap="round"; ctx.lineJoin="round";
+    for (const path of (p.fill||[])) ctx.fill(path, "evenodd");
+    if (p.stroke && p.stroke.length){ ctx.lineWidth = p.strokeWidth; for (const path of p.stroke) ctx.stroke(path); }
+    ctx.restore();
+  }
+
+  draw(state, t, dark){
+    const S = this.size, ctx = this.ctx;
+    ctx.clearRect(0,0,S,S);
+    const col = stateColor(state);
+    const buf=this.buf, bctx=this.bctx, mbuf=this.mbuf, mctx=this.mctx;
+    const W = Math.ceil(S*this.dpr);
+    if (buf.width!==W){ buf.width=W; buf.height=W; mbuf.width=W; mbuf.height=W; }
+    bctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    bctx.clearRect(0,0,S,S);
+
+    const hover = (state==="working") ? Math.sin(t*1.6)*S*0.045 : 0;
+
+    // per-state params
+    let fillA = 0.16, lineGap = S*0.075, lineA = 0.5, barSpeed = 0.35, barA = 0.85, dim = 1, glitch = 0;
+    if (state==="idle"){ barSpeed = 0.18; }
+    else if (state==="working"){ barSpeed = 0.7; fillA = 0.2; }
+    else if (state==="completed"){ barSpeed = 0.0; }     // uses one-shot sweep below
+    else if (state==="attention"){ barSpeed = 0.0; }     // uses pulse flash below
+    else if (state==="failed"){ glitch = 1; dim = 0.9; barSpeed = 0; }
+    else if (state==="paused"){ dim = 0.45; barSpeed = 0; lineA = 0.35; }
+
+    bctx.save();
+    bctx.translate(0, hover);
+
+    // base fill
+    bctx.fillStyle = rgb(col, fillA*dim);
+    bctx.fillRect(0,0,S,S);
+
+    // horizontal scanlines
+    bctx.strokeStyle = rgb(col, lineA*dim);
+    bctx.lineWidth = Math.max(0.6, S*0.012);
+    const off = (state==="working"||state==="idle") ? (t*S*0.05)%lineGap : 0;
+    for (let y = -lineGap + off; y < S+lineGap; y += lineGap){
+      bctx.beginPath(); bctx.moveTo(0,y); bctx.lineTo(S,y); bctx.stroke();
+    }
+
+    // travelling scan bar (idle/working)
+    if (barSpeed>0){
+      const yb = ((t*barSpeed)%1)*S;
+      const bh = S*0.28;
+      const g = bctx.createLinearGradient(0, yb-bh, 0, yb+bh);
+      g.addColorStop(0, rgb(col,0));
+      g.addColorStop(0.5, rgb([255,255,255], barA*0.5));
+      g.addColorStop(1, rgb(col,0));
+      bctx.fillStyle = g; bctx.fillRect(0, yb-bh, S, bh*2);
+    }
+
+    // completed: single diagonal sweep on 2.5s cadence
+    if (state==="completed"){
+      const lp=(t%2.5)/2.5; const ang=-Math.PI/4; const dx=Math.cos(ang),dy=Math.sin(ang);
+      const reach=S*1.2; const head=(lp*2-0.5)*reach; const bl=S*0.32;
+      const hx=S/2+dx*head, hy=S/2+dy*head;
+      const g=bctx.createLinearGradient(hx-dx*bl,hy-dy*bl,hx+dx*bl,hy+dy*bl);
+      g.addColorStop(0,rgb([255,255,255],0)); g.addColorStop(0.5,rgb([255,255,255],0.55)); g.addColorStop(1,rgb([255,255,255],0));
+      bctx.fillStyle=g; bctx.fillRect(0,0,S,S);
+    }
+    // attention: whole panel flashes brighter, pulsing, ~1s rest
+    if (state==="attention"){
+      const lp=t%2.0; const on = lp<1.0 ? Math.sin(lp*Math.PI) : 0;
+      bctx.fillStyle = rgb(col, 0.4*on);
+      bctx.fillRect(0,0,S,S);
+    }
+    // failed: chromatic glitch offset slabs
+    if (glitch){
+      for (let g2=0; g2<3; g2++){
+        const gy = (Math.sin(t*3+g2*2.1)*0.5+0.5)*S;
+        const gh = S*0.06;
+        bctx.globalAlpha = 0.5;
+        bctx.fillStyle = rgb(col, 0.6);
+        bctx.fillRect(Math.sin(t*7+g2)*S*0.05, gy, S, gh);
+        bctx.globalAlpha = 1;
+      }
+    }
+
+    // subtle top-edge bright rim for a screen/hologram feel
+    bctx.restore();
+
+    // clip to silhouette
+    mctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    mctx.clearRect(0,0,S,S);
+    mctx.save(); mctx.translate(0,hover); this.drawSilhouette(mctx,S); mctx.restore();
+    bctx.save();
+    bctx.globalCompositeOperation="destination-in";
+    bctx.setTransform(1,0,0,1,0,0);
+    bctx.drawImage(mbuf,0,0);
+    bctx.restore();
+
+    // outline stroke on top for crispness
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.drawImage(buf,0,0);
+    ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    ctx.save(); ctx.translate(0,hover);
+    const p=SHAPE_PATH2D[currentShape]; const pad=S*0.06; const scale=(S-pad*2)/p.vb;
+    ctx.translate(pad,pad); ctx.scale(scale,scale);
+    ctx.strokeStyle = rgb(col, 0.8*dim); ctx.lineJoin="round"; ctx.lineCap="round";
+    ctx.lineWidth = (S*0.016)/scale;
+    for (const path of (p.fill||[])) ctx.stroke(path);
+    if (p.stroke && p.stroke.length){ ctx.lineWidth=p.strokeWidth; for(const path of p.stroke) ctx.stroke(path); }
+    ctx.restore();
+  }
+}
+
+
+// --- Waveform / equalizer renderer ----------------------------------------
+// A row of vertical bars that react per state. Not shape-clipped; the selected
+// shape seeds subtle character variation so the Shape field stays meaningful.
+class WaveAvatar {
+  constructor(size){
+    this.size = size;
+    this.dpr = Math.min(window.devicePixelRatio||1, 2);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = size*this.dpr; this.canvas.height = size*this.dpr;
+    this.canvas.style.width = size+"px"; this.canvas.style.height = size+"px";
+    this.ctx = this.canvas.getContext("2d");
+    this.ctx.scale(this.dpr, this.dpr);
+    this.bars = null; this.nbars = 0;
+  }
+  resetTrails(){}
+
+  shapeSeed(){
+    // stable per-shape offset so each shape has a slightly different rhythm
+    const keys = Object.keys(SHAPE_LABELS);
+    const idx = Math.max(0, keys.indexOf(currentShape));
+    return idx * 1.37;
+  }
+
+  // Symmetric height envelope per shape: u in 0..1 across the bar row,
+  // returns 0..1 multiplier that traces a mirror-symmetric silhouette.
+  // Each shape is deliberately distinct in outline.
+  envelope(u){
+    const s = Math.abs(u*2 - 1);      // 0 at centre, 1 at edges
+    const m = 1 - s;                  // 1 at centre, 0 at edges
+    switch(currentShape){
+      case "comms":            // sharp narrow spike (tall thin triangle)
+        return 0.08 + 0.92*Math.pow(m, 2.2);
+      case "account_planning": // wide flat-topped mesa (steep sides, flat middle)
+        return 0.30 + 0.70*Math.min(1, Math.pow(m, 0.28));
+      case "onboarding":       // clear discrete staircase (few big steps)
+        return 0.15 + 0.85*(Math.min(3, Math.floor(m*4)) / 3);
+      case "expansion":        // double hump (M / camel) — dip in the centre
+        return 0.20 + 0.80*(0.55*Math.pow(m,0.6) + 0.45*Math.pow(Math.max(0,1-Math.abs(s-0.5)*2.2),2));
+      case "renewal":          // deep hourglass (very pinched centre, tall edges)
+        return 0.12 + 0.88*Math.pow(s, 1.6);
+      case "risk":             // hexagon: flat plateau with straight 45° shoulders
+        return 0.28 + 0.72*Math.min(1, Math.max(0, 1.6 - s*2.0));
+      default:
+        return 0.2 + 0.8*m;
+    }
+  }
+
+  draw(state, t, dark){
+    const S = this.size, ctx = this.ctx;
+    ctx.clearRect(0,0,S,S);
+    const col = stateColor(state);
+    const seed = this.shapeSeed();
+
+    // more bars so the envelope reads as a shape
+    const n = S >= 56 ? 13 : (S >= 36 ? 11 : 7);
+    if (this.nbars !== n){ this.bars = new Array(n).fill(0); this.nbars = n; }
+    const midY = S*0.5;
+    const areaW = S*0.72;
+    const x0 = (S-areaW)/2;
+    const gap = areaW / n;
+    const barW = Math.max(1.5, gap*0.46);
+    const maxH = S*0.40;
+
+    // how much the shape envelope dominates vs. the live reactive motion.
+    // Calm states (paused/idle/completed) show the shape strongly; active
+    // states keep it recognisable but let the motion breathe.
+    let envMix;
+    if (state==="paused") envMix = 1.0;
+    else if (state==="idle") envMix = 0.85;
+    else if (state==="completed") envMix = 0.8;
+    else if (state==="attention") envMix = 0.7;
+    else if (state==="working") envMix = 0.55;
+    else envMix = 0.5; // failed
+
+    // one-shot cycle timers for completed/attention
+    const compLp = (t % 2.5)/2.5;    // completed sweep
+    const attLp = t % 2.0;           // attention: pulse + rest
+
+    for (let i=0;i<n;i++){
+      const u = n>1 ? i/(n-1) : 0.5;
+      const envH = this.envelope(u);   // 0..1 shape height at this bar
+
+      // live reactive component 0..1 per state
+      let live;
+      switch(state){
+        case "idle":
+          live = 0.55 + 0.25*(0.5+0.5*Math.sin(t*1.6 + i*0.5 + seed));
+          break;
+        case "working":
+          live = 0.35 + 0.65*Math.abs(Math.sin(t*4.2 + i*0.6 + seed))
+                * (0.6 + 0.4*Math.sin(t*2.1 + i));
+          break;
+        case "completed": {
+          const lead = u;
+          const settle = Math.min(1, Math.max(0, (compLp - lead*0.35)*2.5));
+          live = 0.4 + 0.6*settle;
+          break;
+        }
+        case "attention": {
+          const on = attLp < 1.0 ? Math.pow(Math.sin(attLp*Math.PI),1.5) : 0;
+          live = 0.35 + 0.65*on;
+          break;
+        }
+        case "failed": {
+          const g = (Math.sin(t*13 + i*4.1) > 0.9) ? Math.random()*0.5 : 0;
+          live = 0.25 + g;
+          break;
+        }
+        case "paused":
+          live = 1.0; // static; envelope fully defines the silhouette
+          break;
+        default:
+          live = 0.6;
+      }
+
+      // combine: shape envelope blended with the live motion
+      let h = envH * (envMix + (1-envMix)*live);
+      if (state==="failed") h = Math.min(h, 0.22 + envH*0.2); // keep it low/broken
+
+      const target = h;
+      const smooth = (state==="paused") ? 1 : 0.35;
+      this.bars[i] += (target - this.bars[i]) * smooth;
+      const bh = Math.max(S*0.02, this.bars[i]*maxH*2);
+
+      const cx = x0 + gap*(i+0.5);
+      let a = 0.85;
+      if (state==="completed"){
+        const crest = Math.exp(-Math.pow((u - (compLp*1.3-0.15))*3.2,2));
+        a = 0.7 + 0.3*crest;
+      }
+      ctx.fillStyle = rgb(col, a);
+      const r = Math.min(barW/2, bh/2);
+      this.roundRect(ctx, cx-barW/2, midY-bh/2, barW, bh, r);
+      ctx.fill();
+
+      // soft glow
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillStyle = rgb(col, 0.15);
+      this.roundRect(ctx, cx-barW/2-1, midY-bh/2-1, barW+2, bh+2, r+1);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // failed: a faint dark baseline to reinforce the flatline
+    if (state==="failed"){
+      ctx.strokeStyle = rgb(col, 0.35);
+      ctx.lineWidth = Math.max(1, S*0.01);
+      ctx.beginPath(); ctx.moveTo(x0, midY); ctx.lineTo(x0+areaW, midY); ctx.stroke();
+    }
+  }
+
+  roundRect(ctx,x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+}
+
+
+
+const SIZES = [64,40,24];
+const avatars = SIZES.map(s=>new Avatar(s));
+const rendersEl = document.getElementById("renders");
+avatars.forEach((a,i)=>{
+  const wrap = document.createElement("div");
+  wrap.className="render";
+  wrap.appendChild(a.canvas);
+  const cap = document.createElement("div");
+  cap.className="cap"; cap.textContent = SIZES[i]+"px";
+  wrap.appendChild(cap);
+  rendersEl.appendChild(wrap);
+});
+
+// Orb avatars (second tab)
+const orbAvatars = SIZES.map(s=>new OrbAvatar(s));
+const orbRendersEl = document.getElementById("orbRenders");
+orbAvatars.forEach((a,i)=>{
+  const wrap = document.createElement("div");
+  wrap.className="render";
+  wrap.appendChild(a.canvas);
+  const cap = document.createElement("div");
+  cap.className="cap"; cap.textContent = SIZES[i]+"px";
+  wrap.appendChild(cap);
+  orbRendersEl.appendChild(wrap);
+});
+
+const blobAvatars = SIZES.map(s=>new BlobAvatar(s));
+const blobRendersEl = document.getElementById("blobRenders");
+blobAvatars.forEach((a,i)=>{
+  const wrap = document.createElement("div"); wrap.className="render";
+  wrap.appendChild(a.canvas);
+  const cap = document.createElement("div"); cap.className="cap"; cap.textContent = SIZES[i]+"px";
+  wrap.appendChild(cap); blobRendersEl.appendChild(wrap);
+});
+
+const scanAvatars = SIZES.map(s=>new ScanlineAvatar(s));
+const scanRendersEl = document.getElementById("scanRenders");
+scanAvatars.forEach((a,i)=>{
+  const wrap = document.createElement("div"); wrap.className="render";
+  wrap.appendChild(a.canvas);
+  const cap = document.createElement("div"); cap.className="cap"; cap.textContent = SIZES[i]+"px";
+  wrap.appendChild(cap); scanRendersEl.appendChild(wrap);
+});
+
+const waveAvatars = SIZES.map(s=>new WaveAvatar(s));
+const waveRendersEl = document.getElementById("waveRenders");
+waveAvatars.forEach((a,i)=>{
+  const wrap = document.createElement("div"); wrap.className="render";
+  wrap.appendChild(a.canvas);
+  const cap = document.createElement("div"); cap.className="cap"; cap.textContent = SIZES[i]+"px";
+  wrap.appendChild(cap); waveRendersEl.appendChild(wrap);
+});
+
+let current = "idle";
+let stateStart = performance.now();
+const controls = document.getElementById("controls");
+const labels = {paused:"Paused",idle:"Idle",working:"Working",attention:"Needs attention",completed:"Completed",failed:"Failed"};
+STATES.forEach(st=>{
+  const b=document.createElement("button");
+  b.className="state"; b.textContent=labels[st];
+  b.setAttribute("aria-pressed", st===current);
+  b.onclick=()=>{ current=st; stateStart=performance.now();
+    [...controls.children].forEach(x=>x.setAttribute("aria-pressed", x.textContent===labels[st]));
+    avatars.forEach(a=>a.resetTrails());
+  };
+  controls.appendChild(b);
+});
+
+// Shape switcher
+const shapeControls = document.getElementById("shapeControls");
+let currentShape = "comms";
+Object.keys(SHAPES).forEach(key=>{
+  const b=document.createElement("button");
+  b.className="shape"; b.textContent=SHAPE_LABELS[key];
+  b.setAttribute("aria-pressed", key===currentShape);
+  b.onclick=()=>{
+    currentShape=key; SHAPE=SHAPES[key]; buildSlots();
+    avatars.forEach(a=>a.resetTrails());
+    [...shapeControls.children].forEach(x=>x.setAttribute("aria-pressed", x.textContent===SHAPE_LABELS[key]));
+    updateDensityReadout();
+  };
+  shapeControls.appendChild(b);
+});
+
+// Density slider
+const densitySlider = document.getElementById("densitySlider");
+const densityVal = document.getElementById("densityVal");
+function updateDensityReadout(){
+  const n = dotCount(SHAPE, RES);
+  const max = dotCount(SHAPE, BASE_N);
+  densityVal.textContent = `${n} dots` + (RES===BASE_N ? " (max)" : "");
+}
+densitySlider.oninput = ()=>{
+  RES = parseInt(densitySlider.value, 10);
+  buildSlots();
+  avatars.forEach(a=>a.resetTrails());
+  updateDensityReadout();
+};
+updateDensityReadout();
+
+const mState=document.getElementById("mState"), mSince=document.getElementById("mSince"), mFps=document.getElementById("mFps");
+const mRenderer=document.getElementById("mRenderer");
+const stage=document.getElementById("stage");
+let dark=true;
+document.getElementById("btnDark").onclick=()=>{dark=true;setCard();};
+document.getElementById("btnLight").onclick=()=>{dark=false;setCard();};
+function setCard(){
+  document.getElementById("btnDark").setAttribute("aria-pressed",dark);
+  document.getElementById("btnLight").setAttribute("aria-pressed",!dark);
+  stage.style.background = dark ? "var(--panel)" : "#f3f4f8";
+  stage.style.borderColor = dark ? "var(--line)" : "#e2e4ea";
+}
+
+// Tab switching
+let tab = "dots";
+const tabs = document.getElementById("tabs");
+const densityLabel = document.getElementById("densityLabel");
+const densityRow = document.getElementById("densityRow");
+const RENDER_Els = { dots: rendersEl, orb: orbRendersEl, blob: blobRendersEl, scan: scanRendersEl, wave: waveRendersEl };
+const RENDERER_LABEL = {
+  dots: "canvas 2d, masked wave-field grid",
+  orb: "canvas 2d, iridescent gradient, shape-clipped",
+  blob: "canvas 2d, morphing liquid metaball",
+  scan: "canvas 2d, HUD scanlines, shape-clipped",
+  wave: "canvas 2d, reactive equalizer bars",
+};
+[...tabs.children].forEach(btn=>{
+  btn.onclick=()=>{
+    tab = btn.dataset.tab;
+    [...tabs.children].forEach(x=>x.setAttribute("aria-pressed", x.dataset.tab===tab));
+    for (const key in RENDER_Els) RENDER_Els[key].style.display = (key===tab) ? "flex" : "none";
+    const isDots = tab==="dots";
+    densityLabel.style.display = isDots ? "" : "none";
+    densityRow.style.display = isDots ? "" : "none";
+    mRenderer.textContent = RENDERER_LABEL[tab] || "";
+  };
+});
+
+let last=performance.now(), fpsAcc=0, fpsN=0;
+function loop(now){
+  const dt=(now-last)/1000; last=now;
+  fpsAcc+=1/Math.max(dt,0.0001); fpsN++;
+  const t = now/1000;
+  if (tab==="dots") avatars.forEach(a=>a.draw(current, t, dark));
+  else if (tab==="orb") orbAvatars.forEach(a=>a.draw(current, t, dark));
+  else if (tab==="blob") blobAvatars.forEach(a=>a.draw(current, t, dark));
+  else if (tab==="scan") scanAvatars.forEach(a=>a.draw(current, t, dark));
+  else if (tab==="wave") waveAvatars.forEach(a=>a.draw(current, t, dark));
+  mState.textContent=labels[current];
+  mSince.textContent=((now-stateStart)/1000).toFixed(1)+"s";
+  if(fpsN>=20){ mFps.textContent=Math.round(fpsAcc/fpsN); fpsAcc=0; fpsN=0; }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
